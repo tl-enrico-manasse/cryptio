@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cryptio · ESC Case Study · Enrico Manasse</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#06080e;--ink2:#0a0d17;--g:rgba(255,255,255,.03);--g2:rgba(255,255,255,.055);--rim:rgba(255,255,255,.07);--rim2:rgba(255,255,255,.12);--blue:#3b82f6;--bl:#60a5fa;--bg:rgba(59,130,246,.15);--grn:#10b981;--gg:rgba(16,185,129,.12);--red:#ef4444;--amb:#f59e0b;--txt:#dde4ef;--dim:#64748b;--d2:#94a3b8;--mn:'DM Mono',monospace;--sf:'Instrument Serif',Georgia,serif;--ss:'Plus Jakarta Sans',sans-serif;--dp:'Syne',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--txt);font-family:var(--ss);font-size:15px;line-height:1.65;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--ink)}::-webkit-scrollbar-thumb{background:var(--rim2);border-radius:2px}
+a{text-decoration:none;color:inherit}
+
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3}
+
+/* SIDEBAR */
+#sb{position:fixed;top:0;left:0;width:220px;height:100vh;background:rgba(6,8,14,.97);border-right:1px solid var(--rim);backdrop-filter:blur(24px);z-index:200;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+#sb::-webkit-scrollbar{display:none}
+.sb-head{padding:20px 18px 14px;border-bottom:1px solid var(--rim);flex-shrink:0}
+.sb-logo{font-family:var(--dp);font-size:14px;font-weight:800;color:var(--txt);letter-spacing:-.02em;margin-bottom:2px}
+.sb-logo em{color:var(--bl);font-style:normal}
+.sb-sub{font-family:var(--mn);font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.sb-nav{padding:10px 8px;flex:1}
+.sbi{display:block;padding:8px 12px;border-radius:6px;border:1px solid transparent;transition:all .2s;margin-bottom:2px;cursor:pointer;position:relative}
+.sbi:hover{background:var(--g2);border-color:var(--rim)}
+.sbi.on{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.22)}
+.sbi.on::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:2px;background:var(--blue);border-radius:2px}
+.sb-n{font-family:var(--mn);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
+.sbi.on .sb-n{color:var(--bl)}
+.sb-l{font-family:var(--ss);font-size:12px;font-weight:600;color:var(--d2);line-height:1.2;margin-bottom:1px;transition:color .2s}
+.sbi:hover .sb-l,.sbi.on .sb-l{color:var(--txt)}
+.sb-h{font-size:10px;color:var(--dim);line-height:1.3;transition:color .2s}
+.sbi:hover .sb-h,.sbi.on .sb-h{color:var(--d2)}
+.sb-ft{padding:14px 18px;border-top:1px solid var(--rim);flex-shrink:0}
+.sb-nm{font-family:var(--dp);font-size:12px;font-weight:700;color:var(--txt)}
+.sb-rl{font-family:var(--mn);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+/* TOPBAR */
+#tb{position:fixed;top:0;left:220px;right:0;z-index:199;height:48px;background:rgba(6,8,14,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.tb-b{font-family:var(--mn);font-size:11px;color:var(--dim);letter-spacing:.06em}
+.tb-b span{color:var(--bl)}
+.tb-s{display:flex;align-items:center;gap:6px;font-family:var(--mn);font-size:10px;color:var(--grn);letter-spacing:.08em;text-transform:uppercase}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+#prog{position:fixed;top:48px;left:220px;right:0;z-index:198;height:1px;background:linear-gradient(90deg,var(--blue),var(--grn));width:0%;transition:width .1s}
+
+/* LAYOUT */
+main{margin-left:220px;padding-top:48px;position:relative;z-index:1}
+.ch{padding:88px 0;position:relative;overflow:hidden}
+.w{max-width:840px;margin:0 auto;padding:0 44px}
+.ww{max-width:1000px;margin:0 auto;padding:0 44px}
+
+/* CHAPTER WATERMARK */
+.cn{font-family:var(--dp);font-size:clamp(7rem,16vw,13rem);font-weight:800;color:rgba(255,255,255,.022);position:absolute;right:-10px;top:50%;transform:translateY(-50%);line-height:1;pointer-events:none;user-select:none;letter-spacing:-.04em}
+
+/* CHAPTER EYE */
+.eye{display:inline-flex;align-items:center;gap:7px;font-family:var(--mn);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--bl);border:1px solid rgba(59,130,246,.25);background:rgba(59,130,246,.06);padding:3px 11px;border-radius:2px;margin-bottom:18px}
+.eye.g{color:var(--grn);border-color:rgba(16,185,129,.25);background:rgba(16,185,129,.06)}
+.eye.r{color:#fca5a5;border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.06)}
+.eye.a{color:var(--amb);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06)}
+.eye.p{color:#c4b5fd;border-color:rgba(139,92,246,.25);background:rgba(139,92,246,.06)}
+
+/* TYPE */
+.disp{font-family:var(--dp);font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;line-height:1.04;letter-spacing:-.03em;color:#fff}
+.disp em{font-style:italic;font-family:var(--sf);color:var(--bl)}
+.ttl{font-family:var(--dp);font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;line-height:1.1;letter-spacing:-.02em;color:#fff}
+.bod{font-size:15px;color:var(--d2);line-height:1.75;max-width:600px}
+.bod strong{color:var(--txt);font-weight:500}
+
+/* DIVIDER */
+.dv{height:1px;background:linear-gradient(90deg,transparent,var(--rim2),transparent)}
+
+/* CARDS */
+.card{background:var(--g);border:1px solid var(--rim);border-radius:8px;padding:22px 26px;transition:border-color .3s,background .3s}
+.card:hover{border-color:var(--rim2);background:var(--g2)}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:800px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.rv.vis{opacity:1;transform:translateY(0)}
+.rv2{opacity:0;transform:translateY(22px);transition:opacity .8s .12s ease,transform .8s .12s ease}
+.rv2.vis{opacity:1;transform:translateY(0)}
+.rv3{opacity:0;transform:translateY(22px);transition:opacity .8s .22s ease,transform .8s .22s ease}
+.rv3.vis{opacity:1;transform:translateY(0)}
+
+/* HERO */
+#hero{min-height:calc(100vh - 48px);display:flex;align-items:center;position:relative}
+#hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 60% 50%,rgba(59,130,246,.04) 0%,transparent 70%);pointer-events:none}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:36px;max-width:500px}
+.kpi{background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.kpi.b::before{background:var(--blue)}.kpi.g::before{background:var(--grn)}
+.kpi.r::before{background:var(--red)}.kpi.a::before{background:var(--amb)}
+.kpi-n{font-family:var(--mn);font-size:1.5rem;line-height:1;margin-bottom:3px}
+.kpi-l{font-size:11px;color:var(--dim);letter-spacing:.04em}
+
+/* PRIORITY CARDS */
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+@media(max-width:860px){.pcards{grid-template-columns:1fr}}
+.pc{border-radius:9px;overflow:hidden;transition:transform .3s}
+.pc:hover{transform:translateY(-3px)}
+.pc-h{padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.pc-b{padding:18px}
+.pc-arr{font-family:var(--mn);font-size:1.4rem;line-height:1;margin-bottom:2px}
+.pc-tier{font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:3px}
+.pc-name{font-family:var(--dp);font-size:13px;font-weight:700;margin:10px 0 5px}
+.pc-desc{font-size:11px;color:var(--d2);line-height:1.55;margin-bottom:12px}
+.sb{margin:4px 0}
+.sb-t{display:flex;justify-content:space-between;font-size:10px;color:var(--d2);margin-bottom:3px}
+.str{height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.sf{height:100%;border-radius:2px}
+
+/* SEVERITY */
+.sev{display:inline-flex;align-items:center;gap:4px;font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+.sev.cr{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+.sev.hi{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}
+.sev.ad{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0;position:relative}
+.steps::before{content:'';position:absolute;left:18px;top:38px;bottom:38px;width:1px;background:linear-gradient(to bottom,var(--blue),var(--grn))}
+.step{display:flex;gap:18px;padding:18px 0;cursor:pointer}
+.step-d{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mn);font-size:10px;z-index:1;flex-shrink:0;background:var(--ink2);border:1px solid var(--rim);transition:all .25s}
+.step.on .step-d{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 14px rgba(59,130,246,.35)}
+.step-c{flex:1;background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:14px 18px;transition:all .25s}
+.step.on .step-c{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.28)}
+.step-tt{font-family:var(--dp);font-size:13px;font-weight:700;margin-bottom:3px}
+.step-s{font-size:12px;color:var(--d2);line-height:1.5}
+.step-dt{font-size:12px;color:var(--d2);line-height:1.65;margin-top:8px;display:none}
+.step.on .step-dt{display:block}
+
+/* CODE */
+.code{background:rgba(0,0,0,.5);border:1px solid rgba(59,130,246,.18);border-radius:5px;padding:12px 16px;font-family:var(--mn);font-size:11px;line-height:1.85;overflow-x:auto;margin-top:8px}
+.cc{color:var(--dim)}.ck{color:#93c5fd}.cv{color:#86efac}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rim);margin-bottom:24px;flex-wrap:wrap}
+.tab{font-family:var(--mn);font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:8px 16px;background:none;border:none;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab:hover{color:var(--txt)}.tab.on{color:var(--bl);border-bottom-color:var(--blue)}
+.pnl{display:none}.pnl.on{display:block;animation:fup .3s ease}
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* TIMELINE */
+.tbar{display:grid;grid-template-columns:repeat(11,1fr);gap:2px}
+.td{background:var(--g);border:1px solid var(--rim);border-radius:4px;padding:9px 4px;text-align:center;font-family:var(--mn);font-size:10px;color:var(--d2);cursor:pointer;transition:all .2s}
+.td:hover,.td.on{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.35);color:var(--bl)}
+.td-s{font-size:8px;color:var(--dim);margin-top:2px}
+.tasks{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+@media(max-width:700px){.tasks{grid-template-columns:1fr}}
+.task{padding:10px 13px;border-radius:5px;border-left:2px solid}
+.task.fi{background:rgba(59,130,246,.06);border-color:var(--blue)}
+.task.op{background:rgba(16,185,129,.06);border-color:var(--grn)}
+.task.en{background:rgba(139,92,246,.06);border-color:#8b5cf6}
+.task-o{font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:4px}
+.task-n{font-size:12px;font-weight:500;line-height:1.4}
+
+/* ROADMAP */
+.rmap{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media(max-width:860px){.rmap{grid-template-columns:repeat(2,1fr)}}
+.rp{background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:16px 13px;position:relative;overflow:hidden;transition:border-color .2s}
+.rp:hover{border-color:var(--rim2)}
+.rpn{font-family:var(--dp);font-size:38px;font-weight:800;color:rgba(255,255,255,.04);position:absolute;top:6px;right:8px;line-height:1}
+.rpm{font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:6px}
+.rpt{font-family:var(--dp);font-size:11px;font-weight:700;margin-bottom:8px}
+.rpi{list-style:none}
+.rpi li{font-size:10px;color:var(--d2);padding:2px 0 2px 9px;position:relative}
+.rpi li::before{content:'▸';position:absolute;left:0;color:var(--blue);font-size:8px}
+
+/* PRINCIPLES */
+.prins{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:860px){.prins{grid-template-columns:1fr 1fr}}
+.prin{background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:18px 16px;transition:border-color .2s}
+.prin:hover{border-color:var(--rim2)}
+.prin-n{font-family:var(--mn);font-size:30px;font-weight:400;color:rgba(255,255,255,.055);line-height:1;margin-bottom:10px}
+.prin-b{font-size:13px;color:var(--d2);line-height:1.65}
+.prin-b strong{color:var(--txt);font-weight:500}
+
+/* COMMS */
+.comms{background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:20px 24px;margin-top:18px}
+.comms-h{display:flex;align-items:center;gap:7px;font-family:var(--mn);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--grn);margin-bottom:10px}
+.comms-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+.comms-b{font-size:13px;color:var(--d2);line-height:1.75;font-style:italic}
+.comms-b strong{color:var(--txt);font-style:normal;font-weight:500}
+
+/* TABLES */
+.ht,.rt,.it{width:100%;border-collapse:collapse;font-size:12px}
+.ht th,.rt th,.it th{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:8px 13px;text-align:left;border-bottom:1px solid var(--rim);background:rgba(255,255,255,.02)}
+.ht td,.rt td,.it td{padding:11px 13px;border-bottom:1px solid var(--rim);color:var(--d2);line-height:1.5;vertical-align:top}
+.ht tr:hover td,.rt tr:hover td,.it tr:hover td{background:var(--g);color:var(--txt)}
+.hl{font-family:var(--mn);font-size:11px;color:var(--bl)}
+.it td:first-child{font-family:var(--mn);font-size:11px;color:var(--bl);white-space:nowrap}
+
+/* PILLS */
+.pl{display:inline-block;font-family:var(--mn);font-size:9px;letter-spacing:.07em;padding:1px 7px;border-radius:100px}
+.pl-b{background:rgba(59,130,246,.1);color:var(--bl);border:1px solid rgba(59,130,246,.2)}
+.pl-g{background:rgba(16,185,129,.1);color:var(--grn);border:1px solid rgba(16,185,129,.2)}
+.pl-a{background:rgba(245,158,11,.1);color:var(--amb);border:1px solid rgba(245,158,11,.2)}
+.pl-r{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+
+/* PILLARS */
+.pillars{display:flex;flex-direction:column;gap:14px}
+.pillar{background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:22px 26px;transition:border-color .2s}
+.pillar:hover{border-color:var(--rim2)}
+.pillar-n{font-family:var(--mn);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--bl);margin-bottom:7px}
+.pillar-t{font-family:var(--dp);font-size:15px;font-weight:700;margin-bottom:9px}
+.pillar ul{padding-left:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.pillar li{font-size:13px;color:var(--d2);line-height:1.6;padding-left:14px;position:relative}
+.pillar li::before{content:'→';position:absolute;left:0;color:var(--blue);font-size:10px}
+
+/* RISK BOX */
+.rbox{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:20px 24px;margin-top:20px}
+.rbox-h{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-family:var(--mn);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#fca5a5}
+.rbox-b{font-size:13px;color:var(--d2);line-height:1.7}
+.rbox-b strong{color:var(--txt);font-weight:500}
+
+/* STAKEHOLDERS */
+.shg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.shg{grid-template-columns:1fr}}
+.shi{display:flex;gap:12px;align-items:start;background:var(--g);border:1px solid var(--rim);border-radius:7px;padding:14px 16px;transition:border-color .2s}
+.shi:hover{border-color:var(--rim2)}
+.sh-ic{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sh-r{font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:2px}
+.sh-n{font-size:13px;font-weight:600;margin-bottom:4px}
+.sh-nt{font-size:11px;color:var(--d2);line-height:1.5}
+
+/* RISK METER */
+.rm{background:rgba(0,0,0,.35);border:1px solid var(--rim);border-radius:7px;padding:16px}
+.rr{display:flex;align-items:center;gap:9px;margin:6px 0}
+.rl{font-size:11px;color:var(--d2);width:140px;flex-shrink:0}
+.rtr{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.rb{height:100%;border-radius:2px}
+.rv-val{font-family:var(--mn);font-size:10px;color:var(--d2);width:24px;text-align:right}
+
+/* SOURCE FLOW */
+.srcflow{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin:18px 0}
+.sn{background:var(--g2);border:1px solid var(--rim2);border-radius:5px;padding:6px 13px;font-family:var(--mn);font-size:11px;color:var(--txt);white-space:nowrap;transition:all .2s}
+.sn:hover{border-color:var(--blue);color:var(--bl);box-shadow:0 0 10px rgba(59,130,246,.2)}
+.sn.core{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4);color:var(--bl);padding:9px 20px;font-size:12px}
+.alcap{font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);text-align:center;margin-bottom:5px}
+
+/* MATURITY */
+.mat{display:flex;align-items:center;gap:0;margin:24px 0}
+.ms{flex:1;text-align:center;padding:13px 6px;background:var(--g);border:1px solid var(--rim);border-right:none;transition:all .3s}
+.ms:first-child{border-radius:6px 0 0 6px}.ms:last-child{border-right:1px solid var(--rim);border-radius:0 6px 6px 0}
+.ms.act{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3)}
+.ms.dn{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.2)}
+.ms-n{font-family:var(--mn);font-size:9px;color:var(--dim);margin-bottom:3px}
+.ms-l{font-size:10px;font-weight:600;color:var(--d2)}
+.ms.act .ms-l{color:var(--bl)}.ms.dn .ms-l{color:var(--grn)}
+
+@media(max-width:900px){#sb{display:none}#tb{left:0}#prog{left:0}main{margin-left:0}.w,.ww{padding:0 18px}.ch{padding:60px 0}.prins{grid-template-columns:1fr 1fr}.rmap{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<!-- SIDEBAR -->
+<aside id="sb">
+  <div class="sb-head">
+    <div class="sb-logo">Cryptio <em>ESC</em></div>
+    <div class="sb-sub">Case Study · 2025</div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#hero" class="sbi on" data-s="hero"><div class="sb-n">00 · Entry</div><div class="sb-l">Introduction</div><div class="sb-h">Stakes, clients, the brief</div></a>
+    <a href="#triage" class="sbi" data-s="triage"><div class="sb-n">01 · Decision</div><div class="sb-l">Triage</div><div class="sb-h">Prioritizing under pressure</div></a>
+    <a href="#scq" class="sbi" data-s="scq"><div class="sb-n">02 · Framework</div><div class="sb-l">Problem Frame</div><div class="sb-h">Situation · Complication · Question</div></a>
+    <a href="#investigation" class="sbi" data-s="investigation"><div class="sb-n">03 · Deep Dive</div><div class="sb-l">Investigation</div><div class="sb-h">Root cause · Client 2</div></a>
+    <a href="#meeting" class="sbi" data-s="meeting"><div class="sb-n">04 · Advisory</div><div class="sb-l">Client Meeting</div><div class="sb-h">Stakeholders & communication</div></a>
+    <a href="#strategy" class="sbi" data-s="strategy"><div class="sb-n">05 · Pillars</div><div class="sb-l">Recommendations</div><div class="sb-h">Three calls to action</div></a>
+    <a href="#timeline" class="sbi" data-s="timeline"><div class="sb-n">06 · Process</div><div class="sb-l">Close Timeline</div><div class="sb-h">T+0 to T+10 workflow</div></a>
+    <a href="#roadmap" class="sbi" data-s="roadmap"><div class="sb-n">07 · Planning</div><div class="sb-l">Roadmap</div><div class="sb-h">Implementation horizons</div></a>
+    <a href="#principles" class="sbi" data-s="principles"><div class="sb-n">08 · Philosophy</div><div class="sb-l">Key Principles</div><div class="sb-h">Operating mindset</div></a>
+  </nav>
+  <div class="sb-ft"><div class="sb-nm">Enrico Manasse</div><div class="sb-rl">ESC Candidate · Cryptio</div></div>
+</aside>
+
+<!-- TOPBAR -->
+<div id="tb">
+  <div class="tb-b">Cryptio ESC · <span>Enterprise Solutions Consultant</span></div>
+  <div class="tb-s"><div class="tb-dot"></div>Live Case Study</div>
+</div>
+<div id="prog"></div>
+
+<main>
+
+<!-- 00 HERO -->
+<section id="hero" class="ch">
+  <div class="w">
+    <div class="rv">
+      <div class="eye">00 · Enterprise Solutions Consultant</div>
+      <h1 class="disp">Enterprise Crypto Finance,<br><em>Operationalized.</em></h1>
+    </div>
+    <p class="bod rv2" style="margin-top:18px;">In crypto accounting, <strong>trust is not created through promises</strong> — it is earned through transparency, precision, and repeatable operational discipline. This case study demonstrates how to navigate ambiguity, prioritize under pressure, and guide enterprise clients toward audit-ready financial operations.</p>
+    <p style="margin-top:10px;font-family:var(--mn);font-size:11px;color:var(--dim);" class="rv3">Methodology: McKinsey Pyramid Principle + Technical Account Management discipline · Answer first · MECE decision tree · Resolve with informed decision.</p>
+    <div class="kpis rv2">
+      <div class="kpi b"><div class="kpi-n" style="color:var(--bl)" data-count="190">0</div><div class="kpi-l">Total ARR at Stake ($K)</div></div>
+      <div class="kpi r"><div class="kpi-n" style="color:#fca5a5">2</div><div class="kpi-l">Active Data Errors</div></div>
+      <div class="kpi g"><div class="kpi-n" style="color:var(--grn)">6</div><div class="kpi-l">Months to Audit</div></div>
+      <div class="kpi a"><div class="kpi-n" style="color:var(--amb)">7</div><div class="kpi-l">Connected Sources</div></div>
+    </div>
+    <div style="display:flex;gap:11px;margin-top:28px;flex-wrap:wrap;" class="rv3">
+      <a href="#triage" style="font-family:var(--mn);font-size:11px;letter-spacing:.09em;text-transform:uppercase;background:var(--blue);color:#fff;padding:10px 20px;border-radius:5px;box-shadow:0 0 22px rgba(59,130,246,.3);transition:all .2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">View Triage Strategy →</a>
+      <a href="#roadmap" style="font-family:var(--mn);font-size:11px;letter-spacing:.09em;text-transform:uppercase;background:transparent;color:var(--d2);padding:10px 20px;border-radius:5px;border:1px solid var(--rim2);transition:all .2s;" onmouseover="this.style.borderColor='rgba(96,165,250,.4)';this.style.color='var(--txt)'" onmouseout="this.style.borderColor='';this.style.color=''">See Audit Roadmap</a>
+    </div>
+  </div>
+  <div class="cn">00</div>
+</section>
+<div class="dv"></div>
+
+<!-- 01 TRIAGE -->
+<section id="triage" class="ch">
+  <div class="ww">
+    <div class="rv"><div class="eye r">01 · Prioritizing Under Pressure</div><h2 class="ttl">The Answer First.<br>Priority: <span style="color:#fca5a5">2</span> → <span style="color:#fcd34d">3</span> → <span style="color:#6ee7b7">1</span></h2></div>
+    <p class="bod rv2" style="margin-top:14px;">The decisive factor is ARR. Along with ARR I weigh against <strong>financial exposure for both Cryptio and the client</strong>, their current data integrity risk, and how irreversible the delay is. Two clients have active incidents and corrupted data. Client 1 has a planning question. Client 2 and 3 must be treated immediately.</p>
+    <div class="pcards rv2">
+      <div class="pc" style="background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.25);">
+        <div class="pc-h" style="background:rgba(239,68,68,.07);border-bottom:1px solid rgba(239,68,68,.15);">
+          <div><div style="font-family:var(--mn);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em">Priority</div><div style="font-family:var(--dp);font-size:1.9rem;font-weight:800;color:#fca5a5;line-height:1">01</div></div>
+          <div class="sev cr">Critical</div>
+        </div>
+        <div class="pc-b">
+          <div class="pc-arr" style="color:var(--bl)">$120K <span style="font-size:11px;color:var(--dim)">ARR</span></div>
+          <div class="pc-tier">Strategic · Active Data Error</div>
+          <div class="pc-name">Missing Volumes — Coinbase</div>
+          <div class="pc-desc">Highest ARR in the set. Maximum revenue at risk. Error cascades: wrong cost basis, wrong P&L, wrong trial balance, wrong tax filing. Every day of inaction means more decisions made on corrupted data. The strategic tier has higher stakes. Unacknowledged errors erode trust faster than the errors themselves.</div>
+          <div class="sb"><div class="sb-t"><span>Cascade Risk</span><span style="color:#fca5a5">Full chain</span></div><div class="str"><div class="sf" style="width:100%;background:var(--red)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Data Integrity</span><span style="color:#fca5a5">Critical</span></div><div class="str"><div class="sf" style="width:95%;background:var(--red)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Reversibility</span><span style="color:#fcd34d">Low</span></div><div class="str"><div class="sf" style="width:16%;background:var(--amb)"></div></div></div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(239,68,68,.08);border-radius:4px;font-size:10px;color:#fca5a5;font-family:var(--mn)">↯ Cost Basis → P&L → Trial Balance → Tax Filing</div>
+        </div>
+      </div>
+      <div class="pc" style="background:rgba(245,158,11,.03);border:1px solid rgba(245,158,11,.2);">
+        <div class="pc-h" style="background:rgba(245,158,11,.06);border-bottom:1px solid rgba(245,158,11,.1);">
+          <div><div style="font-family:var(--mn);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em">Priority</div><div style="font-family:var(--dp);font-size:1.9rem;font-weight:800;color:#fcd34d;line-height:1">02</div></div>
+          <div class="sev hi">High</div>
+        </div>
+        <div class="pc-b">
+          <div class="pc-arr" style="color:var(--amb)">$50K <span style="font-size:11px;color:var(--dim)">ARR</span></div>
+          <div class="pc-tier">Standard · Active Error</div>
+          <div class="pc-name">Asset Roll Forward — Zero ETH</div>
+          <div class="pc-desc">Second-highest ARR in the set with an active error. Zero ETH on a source the client knows holds ETH is a false statement. If this reaches auditors, board members or tax advisors in its current form, the client has an issue and so do we. Lower priority than Client 2 because a balance discrepancy does not cascade into cost basis corruption the same way.</div>
+          <div class="sb"><div class="sb-t"><span>External Exposure</span><span style="color:#fcd34d">Active</span></div><div class="str"><div class="sf" style="width:65%;background:var(--amb)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Data Integrity</span><span style="color:#fcd34d">High</span></div><div class="str"><div class="sf" style="width:72%;background:var(--amb)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Reversibility</span><span style="color:#6ee7b7">Medium</span></div><div class="str"><div class="sf" style="width:50%;background:var(--grn)"></div></div></div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(245,158,11,.08);border-radius:4px;font-size:10px;color:#fcd34d;font-family:var(--mn)">↯ Balance misstatement visible to external parties</div>
+        </div>
+      </div>
+      <div class="pc" style="background:rgba(16,185,129,.03);border:1px solid rgba(16,185,129,.15);">
+        <div class="pc-h" style="background:rgba(16,185,129,.05);border-bottom:1px solid rgba(16,185,129,.1);">
+          <div><div style="font-family:var(--mn);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em">Priority</div><div style="font-family:var(--dp);font-size:1.9rem;font-weight:800;color:#6ee7b7;line-height:1">03</div></div>
+          <div class="sev ad">Advisory</div>
+        </div>
+        <div class="pc-b">
+          <div class="pc-arr" style="color:var(--grn)">$20K <span style="font-size:11px;color:var(--dim)">ARR</span></div>
+          <div class="pc-tier">Strategic · No Active Error</div>
+          <div class="pc-name">FIFO → HIFO Methodology Review</div>
+          <div class="pc-desc">No active error. A forward-looking planning question. The right answer matters at tax filing moment, it does not need to be shipped in the next 24 hours. The right response is a structured advisory session. Given the commercial implications, the Account Manager can be looped in.</div>
+          <div class="sb"><div class="sb-t"><span>Data Integrity Risk</span><span style="color:#6ee7b7">None</span></div><div class="str"><div class="sf" style="width:0%;background:var(--grn)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Decision Irreversibility</span><span style="color:#fcd34d">High</span></div><div class="str"><div class="sf" style="width:80%;background:var(--amb)"></div></div></div>
+          <div class="sb"><div class="sb-t"><span>Urgency</span><span style="color:#6ee7b7">Low</span></div><div class="str"><div class="sf" style="width:14%;background:var(--grn)"></div></div></div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(16,185,129,.07);border-radius:4px;font-size:10px;color:#6ee7b7;font-family:var(--mn)">✓ A $20K ARR advisory handled well can lead to $50K ARR.</div>
+        </div>
+      </div>
+    </div>
+    <div class="rv3" style="margin-top:20px;">
+      <table class="ht">
+        <thead><tr><th>Client</th><th>ARR</th><th>Active Error?</th><th>Cascade Risk</th><th>Reversibility</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Client 2</span></td><td><span class="pl pl-b">$120K</span></td><td><span class="pl pl-r">Yes</span></td><td style="color:var(--txt)">High — corrupts cost basis, P&L, tax</td><td><span class="pl pl-a">Low</span></td><td><strong style="color:#fca5a5">Fix first</strong></td></tr>
+          <tr><td><span class="hl">Client 3</span></td><td><span class="pl pl-b">$50K</span></td><td><span class="pl pl-r">Yes</span></td><td style="color:var(--txt)">Medium — balance misstatement</td><td><span class="pl pl-g">Medium</span></td><td><strong style="color:#fcd34d">Fix second</strong></td></tr>
+          <tr><td><span class="hl">Client 1</span></td><td><span class="pl pl-b">$20K</span></td><td><span class="pl pl-g">No</span></td><td style="color:var(--d2)">None — planning question</td><td><span class="pl pl-g">High</span></td><td><strong style="color:#6ee7b7">Advisory</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="cn">01</div>
+</section>
+<div class="dv"></div>
+
+<!-- 02 SCQ -->
+<section id="scq" class="ch">
+  <div class="w">
+    <div class="rv"><div class="eye">02 · Problem Framework</div><h2 class="ttl">Situation · Complication<br>· Question</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">Situation, complication, question. Frame the problem before solving it. No hypothesis without first establishing what is true, what is broken, and what we need to answer.</p>
+    <div class="g3 rv2" style="margin-top:26px;">
+      <div class="card" style="border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.03);">
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--bl);margin-bottom:10px">Situation</div>
+        <p style="font-size:13px;color:var(--d2);line-height:1.7">Cryptio is a digital asset accounting platform serving exchanges, funds, and corporate treasury clients across EU, UK, and US. Client 2 has seven connected sources including Coinbase, Gemini, Deribit, and Fireblocks. <strong style="color:var(--txt)">Books are live. Audit is six months away.</strong> The platform is generating Missing Volumes errors: assets recorded as disposed with no matching acquisition cost.</p>
+      </div>
+      <div class="card" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.03);">
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#fca5a5;margin-bottom:10px">Complication</div>
+        <p style="font-size:13px;color:var(--d2);line-height:1.7">Missing volume errors corrupt the cost basis calculation. Every downstream output, P&L, trial balance, and tax report is wrong. The client is a regulated exchange. Their financial statements and regulatory filings depend on clean books. <strong style="color:var(--txt)">The root cause is still unknown.</strong> Until we know whether this is a configuration issue or a misclassification, we cannot fix it.</p>
+      </div>
+      <div class="card" style="border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.03);">
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--grn);margin-bottom:10px">Key Question</div>
+        <p style="font-size:13px;color:var(--txt);line-height:1.7;font-weight:500">What is the root cause of the Missing Volumes and what is the fastest path to fix the errors before the audit?</p>
+      </div>
+    </div>
+    <div class="rv2" style="margin-top:32px;padding:26px;background:var(--g);border:1px solid var(--rim);border-radius:8px;">
+      <div class="alcap">System Architecture — Source to Audit</div>
+      <div class="alcap" style="margin-top:10px;">Layer 1 — Sources</div>
+      <div class="srcflow">
+        <div class="sn">⬡ Ethereum</div><div class="sn">₿ Bitcoin</div><div class="sn">◎ Solana</div><div class="sn">⬡ Optimism</div><div class="sn">◈ Gemini</div><div class="sn">◎ Deribit</div><div class="sn">⬡ Fireblocks</div><div class="sn">🏦 Coinbase</div>
+      </div>
+      <div style="text-align:center;color:var(--blue);margin:4px 0;font-size:16px">↓ API / On-chain indexer ↓</div>
+      <div class="alcap">Layer 2 — Cryptio Core</div>
+      <div class="srcflow"><div class="sn core">⚡ Cryptio — Normalization · Cost Basis · Reconciliation · Journals</div></div>
+      <div style="text-align:center;color:var(--blue);margin:4px 0;font-size:16px">↓ Structured export ↓</div>
+      <div class="alcap">Layer 3 — Reporting & Audit</div>
+      <div class="srcflow">
+        <div class="sn">📊 Trial Balance</div><div class="sn">📋 P&L</div><div class="sn">🔍 Tax Report</div><div class="sn">🏢 ERP</div><div class="sn">✅ External Audit</div>
+      </div>
+    </div>
+  </div>
+  <div class="cn">02</div>
+</section>
+<div class="dv"></div>
+
+<!-- 03 INVESTIGATION -->
+<section id="investigation" class="ch">
+  <div class="ww">
+    <div class="rv"><div class="eye a">03 · Restoring Data Confidence</div><h2 class="ttl">Root Cause Analysis<br>— Client 2</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">When financial data becomes unreliable, <strong>customer confidence deteriorates quickly.</strong> Hypotheses tree with MECE logic: rule out the cheapest first, then test the most likely.</p>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:28px;margin-top:32px;" class="rv2">
+      <div>
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:10px">Enterprise Risk Meter</div>
+        <div class="rm">
+          <div class="rr"><div class="rl">Cost Basis Integrity</div><div class="rtr"><div class="rb" style="width:94%;background:var(--red)"></div></div><div class="rv-val">94</div></div>
+          <div class="rr"><div class="rl">P&L Accuracy</div><div class="rtr"><div class="rb" style="width:88%;background:var(--red)"></div></div><div class="rv-val">88</div></div>
+          <div class="rr"><div class="rl">Trial Balance Risk</div><div class="rtr"><div class="rb" style="width:75%;background:var(--amb)"></div></div><div class="rv-val">75</div></div>
+          <div class="rr"><div class="rl">Tax Exposure</div><div class="rtr"><div class="rb" style="width:80%;background:var(--amb)"></div></div><div class="rv-val">80</div></div>
+          <div class="rr"><div class="rl">Audit Readiness</div><div class="rtr"><div class="rb" style="width:28%;background:#8b5cf6"></div></div><div class="rv-val">28</div></div>
+        </div>
+        <div class="comms">
+          <div class="comms-h"><div class="comms-dot"></div>Day 1 — Targeted Comms to Client</div>
+          <div class="comms-b"><strong>"We have reviewed the error report.</strong> We have identified [X] transactions across [Y] assets between [date range]. We are currently investigating the root cause and will have an update by end of today. <strong>No actions needed from you yet. We will update you as soon as we know more."</strong></div>
+        </div>
+      </div>
+      <div class="steps" id="fs">
+        <div class="step on" onclick="as(this)">
+          <div class="step-d">01</div>
+          <div class="step-c">
+            <div class="step-tt">Phase 1 — Scope the Error · Day 1</div>
+            <div class="step-s">Export full Missing Volumes report. Identify the pattern. Send client update.</div>
+            <div class="step-dt">Export asset, quantity, disposal date, proceeds from Cryptio. Identify whether errors cluster on specific assets, date ranges, or transaction types (sales vs transfers vs swaps). Cross-reference against Coinbase import logs: confirm configured start date, check for sync failures, API rate limit errors, pagination gaps.<div class="code"><span class="cc">-- Scope: Missing Volumes by asset</span><br><span class="ck">SELECT</span> asset, COUNT(*) as errors,<br>&nbsp;&nbsp;MIN(disposal_date) as earliest,<br>&nbsp;&nbsp;SUM(proceeds) as exposed_value<br><span class="ck">FROM</span> missing_volumes_report<br><span class="ck">GROUP BY</span> asset <span class="ck">ORDER BY</span> exposed_value <span class="ck">DESC</span></div></div>
+          </div>
+        </div>
+        <div class="step" onclick="as(this)">
+          <div class="step-d">02</div>
+          <div class="step-c">
+            <div class="step-tt">Phase 2 — Diagnose · Day 1–2</div>
+            <div class="step-s">Test all three hypotheses. Document root cause in a pager doc before proposing a fix.</div>
+            <div class="step-dt">Test A: compare earliest disposal date vs Coinbase source start date. Test B: check each affected asset on every other connected source, Gemini, Fireblocks, OTC. Test C: review inbound Coinbase transactions, confirm how Cryptio classified them as transfer or deposit. Share findings with the client team before suggesting a fix. This shows we are on top of it.</div>
+          </div>
+        </div>
+        <div class="step" onclick="as(this)">
+          <div class="step-d">03</div>
+          <div class="step-c">
+            <div class="step-tt">Phase 3 — Resolve · Day 2–4</div>
+            <div class="step-s">Execute fix based on confirmed root cause.</div>
+            <div class="step-dt">A: extend Coinbase start date, re-sync, verify transaction count difference in logs, re-run cost basis. B: import originating source; create manual cost entry for OTC with full documentation (date, quantity, unit cost, counterparty, receipt). C: re-tag as Transfer In, re-run matching, verify Transfer Out at origin. I own step C. Client reviews and signs off.</div>
+          </div>
+        </div>
+        <div class="step" onclick="as(this)">
+          <div class="step-d">04</div>
+          <div class="step-c">
+            <div class="step-tt">Phase 4 — Validate, Validate Again and Document · Day 4–5</div>
+            <div class="step-s">Zero Missing Volumes in logs. Written audit trail delivered.</div>
+            <div class="step-dt">Re-run cost basis report. Confirm Missing Volumes count = 0 for affected assets. Share a written resolution TLDR: root cause confirmed, steps taken, what the client should monitor. This also serves as the audit trail. Prevention: implement a Source Completeness Checklist alert as Step 1 of every monthly close. Long term, learnings should be automated and captured in an onboarding playbook.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rv2" style="margin-top:28px;">
+      <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:10px">Root Cause Framework — MECE</div>
+      <table class="ht">
+        <thead><tr><th>Hypothesis</th><th>Logic</th><th>Diagnosis Signal</th><th>Frequency</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">A — Import Gap</span></td><td>Coinbase API configured with a start date that post-dates some acquisitions. The buys exist but sit outside the import window.</td><td>Missing volumes cluster at earliest transactions in the import window. Gap is date-related and consistent.</td><td><span class="pl pl-b">Very common</span></td></tr>
+          <tr><td><span class="hl">B — Cross-Source</span></td><td>Assets acquired on Gemini, Fireblocks, or an OTC desk and transferred to Coinbase. Cryptio has not yet mapped their acquisition on the books.</td><td>Missing volumes on a specific asset only, e.g. ETH. Other assets, e.g. BTC, show clean records on another connected source.</td><td><span class="pl pl-a">Common — exchanges</span></td></tr>
+          <tr><td><span class="hl">C — Misclassification</span></td><td>A wallet-to-vault or vault-to-exchange movement classified as a new inbound rather than a deposit. Creates a duplicate inflow with no cost basis.</td><td>Missing volumes on assets frequently moved between internal wallets. Most common on Fireblocks-to-Coinbase flows.</td><td><span class="pl pl-b">Common — custodial</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="rv3" style="margin-top:20px;">
+      <table class="rt">
+        <thead><tr><th>Root Cause</th><th>Resolution</th><th>Client Action?</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Hypothesis A</span></td><td>Extend Coinbase source import start date and re-sync. Verify transaction count difference in logs to confirm full recovery. Re-run Cryptio cost basis.</td><td>Minimal — client confirms earliest acquisition date if unknown.</td></tr>
+          <tr><td><span class="hl">Hypothesis B</span></td><td>Identify originating source, ensure fully imported into Cryptio. System maps acquisition via Transfer In/Out chain. Manual cost entry for OTC: date, quantity, unit cost, counterparty, receipt.</td><td>Moderate — share OTC trade confirmations or identify originating platform.</td></tr>
+          <tr><td><span class="hl">Hypothesis C</span></td><td>Re-tag misclassified inbound as Transfer In from correct internal source. Re-run cost basis matching. Verify source wallet has corresponding Transfer Out recorded.</td><td>I own this step. Client reviews and signs off on re-classification.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="cn">03</div>
+</section>
+<div class="dv"></div>
+
+<!-- 04 MEETING -->
+<section id="meeting" class="ch">
+  <div class="w">
+    <div class="rv"><div class="eye p">04 · Client Engagement</div><h2 class="ttl">A Regulated Exchange.<br>Seven Sources. Six Months.</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">A first meeting is only as good as the preparation behind it. The objective is not to demonstrate product knowledge — it is to demonstrate that we <strong>already understand their operation better than they expected.</strong></p>
+    <div class="g2 rv2" style="margin-top:28px;">
+      <div class="card" style="border-color:rgba(139,92,246,.2);background:rgba(139,92,246,.03);">
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;margin-bottom:12px">Meeting Agenda</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;gap:10px;align-items:start;"><div style="font-family:var(--mn);font-size:10px;color:#c4b5fd;width:34px;flex-shrink:0;padding-top:2px">00:05</div><div style="font-size:12px;color:var(--d2)">Introductions. Confirm implementation handover reviewed. Establish credibility before asking questions.</div></div>
+          <div style="display:flex;gap:10px;align-items:start;"><div style="font-family:var(--mn);font-size:10px;color:#c4b5fd;width:34px;flex-shrink:0;padding-top:2px">00:15</div><div style="font-size:12px;color:var(--d2)">Discovery: source infrastructure, close process, known pain points, audit timeline.</div></div>
+          <div style="display:flex;gap:10px;align-items:start;"><div style="font-family:var(--mn);font-size:10px;color:#c4b5fd;width:34px;flex-shrink:0;padding-top:2px">00:35</div><div style="font-size:12px;color:var(--d2)">TB discrepancy deep-dive. Walk the data. Propose investigation framework.</div></div>
+          <div style="display:flex;gap:10px;align-items:start;"><div style="font-family:var(--mn);font-size:10px;color:#c4b5fd;width:34px;flex-shrink:0;padding-top:2px">00:50</div><div style="font-size:12px;color:var(--d2)">Agree next steps, owners, timeline. Confirm what we need from them vs what they need from us.</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:10px">Discovery Questions</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="card" style="padding:11px 14px;"><div style="font-family:var(--mn);font-size:9px;color:var(--bl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Operations</div><div style="font-size:12px;color:var(--d2)">Walk me through your current month-end close. Where does it break today?</div></div>
+          <div class="card" style="padding:11px 14px;"><div style="font-family:var(--mn);font-size:9px;color:var(--grn);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Data Sources</div><div style="font-size:12px;color:var(--d2)">Which source do you trust most as ground truth — Fireblocks, exchange APIs, or on-chain data?</div></div>
+          <div class="card" style="padding:11px 14px;"><div style="font-family:var(--mn);font-size:9px;color:var(--amb);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Audit</div><div style="font-size:12px;color:var(--d2)">What does your auditor expect as the primary audit trail for crypto disposals?</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rv2" style="margin-top:28px;">
+      <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:12px">Stakeholder Map</div>
+      <div class="shg">
+        <div class="shi"><div class="sh-ic" style="background:rgba(59,130,246,.1)">👔</div><div><div class="sh-r">Decision Maker</div><div class="sh-n">Client CFO / Controller</div><div class="sh-nt">Approval for manual cost entries and policy decisions. No surprises — update at every phase.</div></div></div>
+        <div class="shi"><div class="sh-ic" style="background:rgba(16,185,129,.1)">⚙️</div><div><div class="sh-r">Day-to-day Owner</div><div class="sh-n">Client Finance Ops</div><div class="sh-nt">Owns the Cryptio workflow. Provides import history and asset movement context. Executes the runbook post-fix.</div></div></div>
+        <div class="shi"><div class="sh-ic" style="background:rgba(139,92,246,.1)">🔧</div><div><div class="sh-r">Platform Expertise</div><div class="sh-n">Cryptio Support</div><div class="sh-nt">Escalate if Coinbase API connector has a known issue. Confirm re-sync behaviour and cost basis recalculation sequence.</div></div></div>
+        <div class="shi"><div class="sh-ic" style="background:rgba(245,158,11,.1)">🤝</div><div><div class="sh-r">Commercial Relationship</div><div class="sh-n">Account Manager</div><div class="sh-nt">Loop in if error persisted more than one close period, or if churn signals appear. Not needed for a routine fix.</div></div></div>
+        <div class="shi"><div class="sh-ic" style="background:rgba(239,68,68,.1)">🏦</div><div><div class="sh-r">Custody / OTC Data</div><div class="sh-n">Client IT / Custody Ops</div><div class="sh-nt">Required only if Hypothesis B confirmed and origin is off-platform. Must provide OTC trade confirmations.</div></div></div>
+        <div class="shi"><div class="sh-ic" style="background:rgba(59,130,246,.1)">📋</div><div><div class="sh-r">External</div><div class="sh-n">External Auditors</div><div class="sh-nt">Six-month runway. Build the audit trail now — source documentation, cost basis methodology, chain of custody for every disposal.</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cn">04</div>
+</section>
+<div class="dv"></div>
+
+<!-- 05 STRATEGY -->
+<section id="strategy" class="ch">
+  <div class="w">
+    <div class="rv"><div class="eye g">05 · Strategic Recommendations</div><h2 class="ttl">Three Pillars.<br>Each One a Call to Action.</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">Not topic headers. Calls to action. Every sentence either advances the fix or prevents the next fire.</p>
+    <div class="pillars rv2" style="margin-top:24px;">
+      <div class="pillar" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.03);">
+        <div class="pillar-n">Pillar 1</div>
+        <div class="pillar-t">Fix the data before it enters the audit record</div>
+        <ul>
+          <li>The 6-month audit window creates a hard deadline. Every close cycle running on corrupted data makes remediations harder and the audit conversation harder.</li>
+          <li>Sequence: scope, diagnose, resolve, validate. A fast guess that is wrong costs more than a methodical two-day investigation.</li>
+        </ul>
+      </div>
+      <div class="pillar" style="border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.03);">
+        <div class="pillar-n">Pillar 2</div>
+        <div class="pillar-t">Prevent recurrence through a structured close process</div>
+        <ul>
+          <li>Most Missing Volumes cases come from configuration gaps during the integration phase. A Source Completeness Checklist before every cost basis run catches them early. Low effort, high impact.</li>
+          <li>The close runbook is a living document. Update it every time a new source or asset type is added.</li>
+        </ul>
+      </div>
+      <div class="pillar" style="border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.03);">
+        <div class="pillar-n">Pillar 3</div>
+        <div class="pillar-t">Use Client 1 advisory to deepen the strategic relationship</div>
+        <ul>
+          <li>FIFO to HIFO is a serious accounting decision with tax consequences that are hard to reverse. Not a support ticket. Prepare a structured options brief with rationale.</li>
+          <li>A $20K ARR advisory handled well can lead to $50K ARR. Deliver in a dedicated call with the Account Manager present.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rbox rv2">
+      <div class="rbox-h">⚠ Risk: Escalate Immediately</div>
+      <div class="rbox-b">If Hypothesis B is confirmed and the client has no OTC acquisition documentation, <strong>escalate to the right channels immediately for visibility.</strong> The client must make a formal accounting policy decision on a deemed cost basis before the next close. This carries direct tax consequences and must be documented before entering their audit record.</div>
+    </div>
+  </div>
+  <div class="cn">05</div>
+</section>
+<div class="dv"></div>
+
+<!-- 06 TIMELINE -->
+<section id="timeline" class="ch">
+  <div class="w">
+    <div class="rv"><div class="eye">06 · Month-End Close</div><h2 class="ttl">T+0 to T+10<br>Operating Model</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">Transform monthly close from a reactive exercise into a <strong>repeatable operational system.</strong> Every phase has an owner. Every dependency is documented.</p>
+    <div class="rv2" style="margin-top:28px;">
+      <div class="tbar" id="tbar"></div>
+      <div id="tc"></div>
+    </div>
+    <div class="rv2" style="margin-top:28px;">
+      <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:12px">Close Maturity Progression</div>
+      <div class="mat">
+        <div class="ms dn"><div class="ms-n">T+1</div><div class="ms-l">Error-Free Ingest</div></div>
+        <div class="ms dn"><div class="ms-n">T+3</div><div class="ms-l">Recon Complete</div></div>
+        <div class="ms act"><div class="ms-n">T+5</div><div class="ms-l">Cost Basis Run</div></div>
+        <div class="ms"><div class="ms-n">T+7</div><div class="ms-l">Approved</div></div>
+        <div class="ms"><div class="ms-n">T+10</div><div class="ms-l">Period Closed</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cn">06</div>
+</section>
+<div class="dv"></div>
+
+<!-- 07 ROADMAP -->
+<section id="roadmap" class="ch">
+  <div class="ww">
+    <div class="rv"><div class="eye g">07 · Implementation</div><h2 class="ttl">From Stabilization<br>to Audit Certification</h2></div>
+    <p class="bod rv2" style="margin-top:14px;">Audit readiness is not a one-time milestone. It is the outcome of <strong>operational consistency, documented controls, and reliable financial data.</strong></p>
+    <div class="rv2" style="margin-top:28px;">
+      <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:10px">Implementation Horizons</div>
+      <table class="it">
+        <thead><tr><th>Horizon</th><th>Action</th><th>Owner</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>Immediate · Day 1</td><td>Get the Missing Volumes report. Identify pattern. Send client end-of-day update.</td><td>ESC</td><td>Scoped error log + client communication sent</td></tr>
+          <tr><td>Short-term · Day 1–4</td><td>Run three-hypothesis diagnostic. Identify root cause. Execute resolution.</td><td>ESC + Client Finance Ops</td><td>Zero Missing Volumes. Cost basis re-run confirmed.</td></tr>
+          <tr><td>Short-term · Day 4–5</td><td>Validate downstream outputs. Deliver resolution TLDR summary.</td><td>ESC</td><td>Written audit trail. Client signed off.</td></tr>
+          <tr><td>Medium-term · Next close</td><td>Implement Source Completeness Checklist as Step 1 of close.</td><td>Client Finance Ops + ESC</td><td>Close runbook updated. First error-free close completed.</td></tr>
+          <tr><td>Medium-term · 2–3 weeks</td><td>Deliver FIFO/HIFO structured advisory brief for Client 1 with AM present.</td><td>ESC + Account Manager</td><td>Options brief delivered. Decision documented.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="rv2" style="margin-top:28px;">
+      <div style="font-family:var(--mn);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:12px">6-Month Audit Readiness Roadmap</div>
+      <div class="rmap">
+        <div class="rp" style="border-color:rgba(239,68,68,.22);background:rgba(239,68,68,.03)"><div class="rpn">1</div><div class="rpm">Month 1</div><div class="rpt" style="color:#fca5a5">Stabilization</div><ul class="rpi"><li>Resolve active errors</li><li>Source completeness audit</li><li>Zero Missing Volumes</li><li>Close runbook v1</li></ul></div>
+        <div class="rp" style="border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.03)"><div class="rpn">2</div><div class="rpm">Month 2</div><div class="rpt" style="color:#fcd34d">Recon Maturity</div><ul class="rpi"><li>Transfer chain mapping</li><li>Automated monitoring</li><li>First error-free close</li><li>D+7 close achieved</li></ul></div>
+        <div class="rp" style="border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.03)"><div class="rpn">3</div><div class="rpm">Month 3</div><div class="rpt" style="color:var(--bl)">Controls & Docs</div><ul class="rpi"><li>Preventive controls live</li><li>Exception log established</li><li>Dual-sign approval</li><li>D+5 close target</li></ul></div>
+        <div class="rp" style="border-color:rgba(139,92,246,.2);background:rgba(139,92,246,.03)"><div class="rpn">4</div><div class="rpm">Month 4</div><div class="rpt" style="color:#c4b5fd">Dry Audit</div><ul class="rpi"><li>Internal mock audit</li><li>Evidence collection test</li><li>Auditor Q&A simulation</li><li>Gap analysis closed</li></ul></div>
+        <div class="rp" style="border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.03)"><div class="rpn">5</div><div class="rpm">Month 5</div><div class="rpt" style="color:var(--grn)">Auditor Prep</div><ul class="rpi"><li>Auditor onboarding</li><li>Full audit trail export</li><li>Methodology docs</li><li>Zero open exceptions</li></ul></div>
+        <div class="rp" style="border-color:rgba(59,130,246,.35);background:rgba(59,130,246,.06)"><div class="rpn">6</div><div class="rpm">Month 6</div><div class="rpt" style="color:var(--bl)">Audit Ready</div><ul class="rpi"><li>External audit conducted</li><li>Clean opinion achieved</li><li>Scaling strategy agreed</li><li>Strategic partner locked</li></ul></div>
+      </div>
+    </div>
+    <div class="g4 rv3" style="margin-top:20px;">
+      <div class="card" style="text-align:center;padding:18px"><div style="font-family:var(--mn);font-size:1.6rem;color:var(--bl);margin-bottom:3px">D+5</div><div style="font-size:10px;color:var(--dim)">Target Close Day</div></div>
+      <div class="card" style="text-align:center;padding:18px"><div style="font-family:var(--mn);font-size:1.6rem;color:var(--grn);margin-bottom:3px">0</div><div style="font-size:10px;color:var(--dim)">Missing Volumes at Close</div></div>
+      <div class="card" style="text-align:center;padding:18px"><div style="font-family:var(--mn);font-size:1.6rem;color:#c4b5fd;margin-bottom:3px">100%</div><div style="font-size:10px;color:var(--dim)">Source Coverage</div></div>
+      <div class="card" style="text-align:center;padding:18px"><div style="font-family:var(--mn);font-size:1.6rem;color:var(--amb);margin-bottom:3px">6mo</div><div style="font-size:10px;color:var(--dim)">To Audit Certification</div></div>
+    </div>
+  </div>
+  <div class="cn">07</div>
+</section>
+<div class="dv"></div>
+
+<!-- 08 PRINCIPLES -->
+<section id="principles" class="ch">
+  <div class="ww">
+    <div class="rv"><div class="eye p">08 · Operating Philosophy</div><h2 class="ttl">Key Principles</h2></div>
+    <div class="prins rv2" style="margin-top:24px;">
+      <div class="prin" style="border-color:rgba(59,130,246,.18)"><div class="prin-n">01</div><div class="prin-b"><strong>Answer first.</strong> Frame the problem before solving it. No hypothesis without a test.</div></div>
+      <div class="prin" style="border-color:rgba(16,185,129,.18)"><div class="prin-n">02</div><div class="prin-b"><strong>No surprises.</strong> Clients find out from us — never from their auditors or their board.</div></div>
+      <div class="prin" style="border-color:rgba(139,92,246,.18)"><div class="prin-n">03</div><div class="prin-b"><strong>Urgency is data-driven.</strong> ARR, data integrity risk, and reversibility of delay — in combination.</div></div>
+      <div class="prin" style="border-color:rgba(245,158,11,.18)"><div class="prin-n">04</div><div class="prin-b"><strong>Prevention over firefighting.</strong> A Source Completeness Checklist is cheaper than a late-night escalation.</div></div>
+      <div class="prin" style="border-color:rgba(59,130,246,.18)"><div class="prin-n">05</div><div class="prin-b"><strong>Every interaction builds trust or spends it.</strong> ESCs are the face of the product.</div></div>
+    </div>
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;" class="rv3">
+      <div><div style="font-family:var(--dp);font-size:14px;font-weight:700;color:var(--txt)">Enrico Manasse</div><div style="font-family:var(--mn);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">Enterprise Solutions Consultant — Candidate · Cryptio</div></div>
+      <div style="font-family:var(--mn);font-size:10px;color:var(--dim);letter-spacing:.05em">Written brief + website · McKinsey Pyramid + TAM discipline · 2025</div>
+    </div>
+  </div>
+  <div class="cn">08</div>
+</section>
+
+<div style="height:40px"></div>
+</main>
+
+<script>
+// CANVAS
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+rsz();window.addEventListener('resize',rsz);
+function Pt(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.22;this.vy=(Math.random()-.5)*.22;this.r=Math.random()*1.1+.3;this.c=Math.random()>.6?'59,130,246':'16,185,129'}
+for(let i=0;i<65;i++)pts.push(new Pt());
+function draw(){ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.c},.3)`;ctx.fill()});
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<90){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.strokeStyle=`rgba(59,130,246,${.045*(1-d/90)})`;ctx.lineWidth=.5;ctx.stroke()}}
+  requestAnimationFrame(draw)}
+draw();
+
+// SCROLL
+window.addEventListener('scroll',()=>{
+  const s=window.scrollY,tot=document.body.scrollHeight-window.innerHeight;
+  document.getElementById('prog').style.width=(s/tot*100)+'%';
+  let cur='';
+  document.querySelectorAll('section[id]').forEach(sec=>{if(s>=sec.offsetTop-150)cur=sec.id});
+  document.querySelectorAll('.sbi').forEach(a=>{a.classList.toggle('on',a.dataset.s===cur)});
+  document.querySelectorAll('.rv,.rv2,.rv3').forEach(el=>{
+    if(el.getBoundingClientRect().top<window.innerHeight-40)el.classList.add('vis')});
+});
+setTimeout(()=>{document.querySelectorAll('.rv,.rv2,.rv3').forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight-40)el.classList.add('vis')})},100);
+
+// COUNTER
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const t=parseFloat(el.dataset.count),d=1800,st=performance.now();
+  function u(n){const p=Math.min((n-st)/d,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(t*e)+'K';if(p<1)requestAnimationFrame(u)}
+  requestAnimationFrame(u)});
+
+// FLOW STEPS
+function as(el){document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));el.classList.add('on')}
+
+// TIMELINE
+const TD=[
+  {l:'T+0',s:'Ingest',tasks:[{o:'ENGINEERING',t:'en',n:'Trigger API sync — all 7 sources'},{o:'ENGINEERING',t:'en',n:'Verify transaction count vs expected'},{o:'CRYPTIO ESC',t:'fi',n:'Monitor for sync errors / rate limits'}]},
+  {l:'T+1',s:'Source Check',tasks:[{o:'FINANCE OPS',t:'fi',n:'Run Source Completeness Checklist'},{o:'FINANCE OPS',t:'fi',n:'Confirm import date ranges — all sources'},{o:'CRYPTIO ESC',t:'fi',n:'Flag any sync failures immediately'}]},
+  {l:'T+2',s:'Recon',tasks:[{o:'ACCOUNTING',t:'fi',n:'Cryptio balances vs on-chain data'},{o:'ACCOUNTING',t:'op',n:'Transfer chain mapping — Fireblocks to Coinbase'},{o:'FINANCE OPS',t:'op',n:'Flag Missing Volumes — do not proceed past T+2 with open errors'}]},
+  {l:'T+3',s:'Exceptions',tasks:[{o:'ACCOUNTING',t:'fi',n:'Review all flagged exceptions'},{o:'CRYPTIO ESC',t:'fi',n:'Root cause analysis on open items'},{o:'CONTROLLER',t:'op',n:'Approve or escalate material exceptions'}]},
+  {l:'T+4',s:'Valuation',tasks:[{o:'ACCOUNTING',t:'fi',n:'Apply market prices at period end'},{o:'ACCOUNTING',t:'fi',n:'Verify unrealised gains calculation'},{o:'FINANCE OPS',t:'op',n:'Review valuation vs expectations'}]},
+  {l:'T+5',s:'Cost Basis',tasks:[{o:'CRYPTIO ESC',t:'fi',n:'Confirm zero Missing Volumes before running'},{o:'ACCOUNTING',t:'fi',n:'Run cost basis (FIFO / HIFO as agreed)'},{o:'ACCOUNTING',t:'op',n:'Review P&L — compare to prior period'}]},
+  {l:'T+6',s:'Journals',tasks:[{o:'ACCOUNTING',t:'fi',n:'Generate journal entries in Cryptio'},{o:'FINANCE OPS',t:'op',n:'Review journal mapping to COA'},{o:'CRYPTIO ESC',t:'fi',n:'Validate journal format for ERP export'}]},
+  {l:'T+7',s:'Approval',tasks:[{o:'FINANCE OPS',t:'op',n:'Finance Ops confirms data completeness'},{o:'CONTROLLER',t:'fi',n:'Controller approves cost basis methodology'},{o:'CFO',t:'fi',n:'CFO review — material items flagged'}]},
+  {l:'T+8',s:'ERP Export',tasks:[{o:'FINANCE OPS',t:'op',n:'Export journals to ERP (NetSuite / SAP)'},{o:'ENGINEERING',t:'en',n:'Verify export integrity — counts match'},{o:'ACCOUNTING',t:'fi',n:'Confirm TB balance in ERP matches Cryptio'}]},
+  {l:'T+9',s:'Mgmt Review',tasks:[{o:'CFO',t:'fi',n:'P&L and balance sheet review'},{o:'CONTROLLER',t:'fi',n:'Crypto-specific variance analysis'},{o:'CRYPTIO ESC',t:'fi',n:'Document close summary for audit trail'}]},
+  {l:'T+10',s:'Close',tasks:[{o:'CONTROLLER',t:'fi',n:'Lock period in Cryptio and ERP'},{o:'ACCOUNTING',t:'op',n:'Archive exception log + close documentation'},{o:'CRYPTIO ESC',t:'fi',n:'Debrief — process improvements for next close'}]},
+];
+const tbar=document.getElementById('tbar'),tc=document.getElementById('tc');
+TD.forEach((d,i)=>{
+  const el=document.createElement('div');
+  el.className='td'+(i===0?' on':'');
+  el.innerHTML=`<strong>${d.l}</strong><div class="td-s">${d.s}</div>`;
+  el.onclick=()=>{document.querySelectorAll('.td').forEach(t=>t.classList.remove('on'));el.classList.add('on');rd(i)};
+  tbar.appendChild(el)});
+function rd(i){const d=TD[i];tc.innerHTML=`<div style="margin-top:12px"><div style="font-family:var(--mn);font-size:11px;color:var(--txt);margin-bottom:10px">${d.l} — ${d.s}</div><div class="tasks">${d.tasks.map(t=>`<div class="task ${t.t}"><div class="task-o">${t.o}</div><div class="task-n">${t.n}</div></div>`).join('')}</div></div>`}
+rd(0);
+</script>
+</body>
+</html>
